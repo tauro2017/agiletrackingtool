@@ -47,15 +47,11 @@ class ItemController {
 				itemsByGroup = Item.getUnfinishedItemsGroupMap()
 			}
 			
-			if ( !itemsByGroup ) render "First create some item groups before working on the backlog."
-			
 			return [itemsByGroup:itemsByGroup,title:title]
 	}
 	
 	def notInIteration = {
 			def itemsByGroup = Item.getUnfinishedItemsGroupMap()
-			
-			if ( !itemsByGroup ) render "First create some item groups before working on the backlog."
 			
 			def itemsByGroupFiltered = [:]
 			itemsByGroup.each{ group, items ->

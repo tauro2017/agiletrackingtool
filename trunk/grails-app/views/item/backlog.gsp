@@ -44,7 +44,7 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
     	<g:javascript library="prototype" />
     	<nav:renderSubItems group="tags" />
     	
-    	<h2>${title}:</h2>
+    	<h2>${title}</h2>
 		<br/>
 		<g:set var="newItemId" value="${0}"/>
 		<g:each var="entry" in="${itemsByGroup}">
@@ -55,6 +55,8 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="groupItems${group.id}" class="itemGroup">
 				<g:render template="itemsPerGroup" model="[items:items,group:group,newItemId:newItemId]"/>					
 			</div>
-		</g:each>	
+		</g:each>
+		
+		<g:link controller="itemGroup" action="create">Create a new group</g:link>
     </body>
 </html>
