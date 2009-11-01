@@ -44,7 +44,6 @@ class Defaults {
 		nr.times {
 			def group = new ItemGroup()
 			group.name = "Group-${it}"
-			group.description = "None"
 			group.items = []
 			
 			ret << group
