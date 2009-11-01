@@ -20,10 +20,11 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------>
 
 <div class="plot">
-  <%  
-  	  PlotFormatUtil.calculateRangeValues(plotData)
-  %>
+
   <g:if test="${plotData?.hasValidCurves()}">
+	  <%  
+	  	  PlotFormatUtil.calculateRangeValues(plotData)
+	  %>
 	 <chart:lineChart title='${plotData.title}' dataType='text' data='${PlotFormatUtil.formatDataForCurves(plotData)}' 
 	     colors="${PlotFormatUtil.formatColorsForCurves(plotData.curves.size())}"
 	     size="${plotSize}"
@@ -35,4 +36,8 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 	 <p>y-axis: ${plotData.yLabel}</p>
 	 <p>x-axis: ${plotData.xLabel}</p>
   </g:if>	
+  <g:else>
+  	<p>No valid plot data available.</p>
+  </g:else>
+  
 </div>

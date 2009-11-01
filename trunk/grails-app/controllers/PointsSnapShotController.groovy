@@ -141,7 +141,7 @@ class PointsSnapShotController {
 			plotData.xMin = plotCurve.xValues.min()
 			plotData.xMax = plotCurve.xValues.max()
 			plotData.yMin = 0
-			plotData.yMax = plotCurve.yValues.max() + 2
+			plotData.yMax = plotCurve.yValues.max()
 			
 			render(view:"plot", model:[plots:[plotData]])
 	}

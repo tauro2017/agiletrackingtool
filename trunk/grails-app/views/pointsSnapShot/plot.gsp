@@ -39,28 +39,27 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
     	<br/>
    
     	<g:if test="${startTime && endTime}">
-   		
-    	<h2>Select day range for history plot:</h2>
-    	<div class="formInput">
-    	<g:form name="dateRangeForm" action="${formAction}">
-    		<table>
-    		<tr>
-	    		<td>StartDate</td>
-	    		<td>
-	    			<g:datePicker name="startDate" value="${startTime}" precision="day"/>
-	    		</td>
-    		</tr>
-    
-    		<tr>
-	    		<td>EndDate</td>
-	    		<td>
-	    			<g:datePicker name="endDate" value="${endTime}" precision="day"/>
-	    		</td>
-    		</table>
-    		<button>Submit</button>
-    	</g:form>
-    	</div>
-    	<br/>
+	    	<h2>Select day range for history plot:</h2>
+	    	<div class="formInput">
+	    	<g:form name="dateRangeForm" action="${formAction}">
+	    		<table>
+	    		<tr>
+		    		<td>StartDate</td>
+		    		<td>
+		    			<g:datePicker name="startDate" value="${startTime}" precision="day"/>
+		    		</td>
+	    		</tr>
+	    
+	    		<tr>
+		    		<td>EndDate</td>
+		    		<td>
+		    			<g:datePicker name="endDate" value="${endTime}" precision="day"/>
+		    		</td>
+	    		</table>
+	    		<button>Submit</button>
+	    	</g:form>
+	    	</div>
+	    	<br/>
     	</g:if>
 		
 		<g:each var="plotDataSet" in="${plots}">
