@@ -30,6 +30,7 @@ class IterationController {
 		subItems: [
 			[action:'list', order:1, title:"Manage"],
 			[action:'showCurrent', order:10, title:'Show current iteration'],
+			[action:'create', order:20, title:'New iteration'],
 			[action:'history', order:50, title:'List all iterations']
 		] 
 	]
