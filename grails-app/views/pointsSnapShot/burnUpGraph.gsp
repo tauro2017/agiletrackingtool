@@ -36,10 +36,7 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
     	<g:javascript library="prototype" />
     	<nav:renderSubItems group="tags" />
     	
-		<g:if test="${plotData}">
-			<g:render template="/shared/plots/linePlot" model="[plotData:plotData, plotSize:[540,300] ]"/>
-		</div>
-		</g:if>
+		<g:render template="/shared/plots/linePlot" model="[plotData:plotData, plotSize:[540,300] ]"/>
 	
     </body>
 </html>
