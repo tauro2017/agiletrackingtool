@@ -22,7 +22,6 @@ along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 class ItemGroup extends ItemContainer {
 	
 	String name
-	String description
          
 	String toString() { return name }
 }
