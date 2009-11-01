@@ -39,7 +39,7 @@ class UtilXml_v0_3 {
 				groups.each{ group ->
 					Group(id:group.id) {
 						name(group.name)
-						description(group.description)
+						description('None')
 					}
 				}
 			} // Groups
@@ -142,7 +142,6 @@ class UtilXml_v0_3 {
 			def g = new ItemGroup()
 			g.id = Integer.parseInt(it.'@id')
 			g.name = it.name.text()
-			g.description = it.description.text()			
 			groups << g
 		} 
 		

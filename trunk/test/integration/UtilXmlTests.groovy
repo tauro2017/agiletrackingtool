@@ -98,7 +98,6 @@ class UtilXmlTests extends GroovyTestCase {
 		groups.eachWithIndex{ group, index ->
 			assertTrue group.id == importGroups[index].id
 			assertTrue group.name == importGroups[index].name
-			assertTrue group.description == importGroups[index].description
 		}
 				
 		items.eachWithIndex{ item, index ->
