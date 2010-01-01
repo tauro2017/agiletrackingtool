@@ -127,7 +127,7 @@ class UtilXml_v0_3 {
 		return builder.bind(doc).toString()	
 	}
 	
-	static def importFromXmlString(def doc)
+	static def importFromXmlDoc(def doc)
 	{
 		def groups = []
 		def items = []
@@ -140,7 +140,7 @@ class UtilXml_v0_3 {
 		
 		doc.Groups.Group.each{ 
 			def g = new ItemGroup()
-			g.id = Integer.parseInt(it.'@id')
+			g.id = Integer.parseInt(it.'@id'.text())
 			g.name = it.name.text()
 			groups << g
 		} 
@@ -149,7 +149,7 @@ class UtilXml_v0_3 {
 		
 		doc.Items.Item.each{
 			def item = new Item()
-			item.uid = Integer.parseInt(it.'@id')
+			item.uid = Integer.parseInt(it.'@id'.text())
 			item.id = item.uid
 			item.itemPoints = Double.parseDouble(it.points.text())
 			item.description = it.description.text()
@@ -161,7 +161,7 @@ class UtilXml_v0_3 {
 			
 			it.SubItems?.SubItem.each{
 				def subItem = new SubItem()
-				subItem.id = Integer.parseInt(it.'@id')
+				subItem.id = Integer.parseInt(it.'@id'.text())
 				subItem.description = it.description.text()				
 				subItem.points = Double.parseDouble(it.points.text())
 				subItem.status = ItemStatus.valueOf(it.status.text() )
@@ -169,7 +169,7 @@ class UtilXml_v0_3 {
 				item.addSubItem(subItem)
 			}
 			
-			def groupId = Integer.parseInt(it.'@groupId')
+			def groupId = Integer.parseInt(it.'@groupId'.text())
 			def group = groups.find{ it.id == groupId }
 			itemsByGroup[group] << item
 			
@@ -180,7 +180,7 @@ class UtilXml_v0_3 {
 			def nit = new Iteration()
 			nit.items = []
 			
-			nit.id = Integer.parseInt(it.'@id')
+			nit.id = Integer.parseInt(it.'@id'.text())
 			nit.workingTitle = it.workingTitle.text()
 			nit.status = IterationStatus.valueOf(it.status.text())
 			
@@ -189,7 +189,7 @@ class UtilXml_v0_3 {
 			
 			def iterItems = []
 			it.Items.ItemId.each{ ItemId ->
-				def foundItem = items.find{it.uid == Integer.parseInt(ItemId.'@id')}
+				def foundItem = items.find{it.uid == Integer.parseInt(ItemId.'@id'.text())}
 				if (foundItem) iterItems << foundItem				
 			}
 			
@@ -234,7 +234,7 @@ class UtilXml_v0_3 {
 			def datesAndOverViewsByGroup = [:] 
 			doc.PointsSnapShotsByGroup.each{ it -> 
 				if (!it) return 
-				def groupId = Integer.parseInt(it.'@groupId')
+				def groupId = Integer.parseInt(it.'@groupId'.text())
 				def group = groups.find{ it.id == groupId }
 				if(group) datesAndOverViewsByGroup[group] = pointsSnapShotsParser(it.PointsSnapShots)
 				else throw new Exception("GroupId (${groupId}) could not be found.")
