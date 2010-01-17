@@ -262,6 +262,8 @@ class UtilXml_v0_3 {
 	
 	static void setRelationToDomainObjects(def map)
 	{
+		map.items.each{ item.project = map.project }
+	
 		map.itemsByIteration.each{ iter, items ->
 			items.each{ item -> iter.addItem(item) } 
 		}
