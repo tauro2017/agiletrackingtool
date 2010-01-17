@@ -243,8 +243,7 @@ class UtilXml_v0_3 {
 			}
 				
 			dateOverViewList.each{ 
-				def snapShot = new PointsSnapShot()
-				snapShot.date =  it.date
+				def snapShot = new PointsSnapShot(project, it.date)
 				snapShot.overView = it.overView
 				groups.each{ group ->
 					def dateAndOverView = datesAndOverViewsByGroup[group]?.find{ Util.getDaysInBetween(it.date, snapShot.date)==0 }
