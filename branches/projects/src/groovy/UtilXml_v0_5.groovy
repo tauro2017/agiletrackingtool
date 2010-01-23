@@ -19,12 +19,12 @@ You should have received a copy of the GNU General Public License
 along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------*/
 
-class UtilXml_v0_3 {
+class UtilXml_v0_5 {
 	static java.text.DateFormat odf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static def docVersion = "0.3"
+	static def docVersion = "0.5"
 	static def seperator = ";"
 		
-	static def exportToXmlString(def groups, def items, def iterations, def pointsSnapShots = [], def exportDate )
+	static def exportToXmlString(def project, def groups, def items, def iterations, def pointsSnapShots = [], def exportDate )
 	{
 		def builder = new groovy.xml.StreamingMarkupBuilder()
 		builder.encoding = "UTF-8"
@@ -35,11 +35,16 @@ class UtilXml_v0_3 {
 			DocumentVersion(docVersion)
 			ExportDate(odf.format(exportDate))
 			
+			Project
+			{
+				name(project.name)
+			}
+			
 			Groups{
 				groups.each{ group ->
 					Group(id:group.id) {
 						name(group.name)
-						description('None')
+						description('None') //TODO: remove on next version */
 					}
 				}
 			} // Groups
@@ -53,6 +58,8 @@ class UtilXml_v0_3 {
 						status(item.status)
 						comment(item.comment)
 						criteria(item.criteria)
+						dateCreated(odf.format(item.dateCreated))
+						lastUpdated(odf.format(item.lastUpdated))
 						
 						SubItems {
 							item.subItems.each{ subItem ->
@@ -85,40 +92,42 @@ class UtilXml_v0_3 {
 				}
 			} // Iterations
 			
-			def joinClosure = { list -> list.join(seperator) }
-			def pointsClosure = { overViews, prio ->
-				points {
-					total(joinClosure(overViews.collect{ it.getPointsForPriority(prio) }))
-					finished(joinClosure(overViews.collect{ it.getPointsForView(prio,ItemStatus.Finished) }))
-				}
-			}
 			
-			def pointsSnapShotsClosure = { dateList, overViews ->
-				PointsSnapShots {
-					dates(joinClosure(dateList.collect{odf.format(it)}))
-					Priority.each{ prio ->
-						PointsByPriority{
-							priority(prio)
-							pointsClosure(overViews, prio)
+			SnapShots {
+				def joinClosure = { list -> list.join(seperator) }
+				
+				def pointsSnapShotsClosure = { dateList, overViews ->
+					PointsSnapShots {
+						dates(joinClosure(dateList.collect{odf.format(it)}))
+						Priority.each{ prio ->
+							PointsByPriority{
+								priority(prio)
+									ItemStatus.each{ status ->
+										PointsByItemStatus {
+											itemStatus(status)
+											points(joinClosure(overViews.collect{ it.getPointsForView(prio,status)}) )
+										}
+									}
+							} // pointsByPriority
 						}
 					}
 				} // PointsSnapShots
-			}
-			
-			def dateList = pointsSnapShots.collect{it.date}
-            pointsSnapShotsClosure(dateList, pointsSnapShots.collect{it.overView})
-			
-			groups.each{ group ->
-				PointsSnapShotsByGroup(groupId:group.id) {
-					dateList = []
-					def overViews = []
-					pointsSnapShots.each{ snapShot ->
-						def pointsForGroup = snapShot.pointsForGroups.find{ it.group.id == group.id } 
-						if (pointsForGroup) { dateList << snapShot.date; overViews << pointsForGroup.overView }
+				
+				def dateList = pointsSnapShots.collect{it.date}
+	            pointsSnapShotsClosure(dateList, pointsSnapShots.collect{it.overView})
+				
+				groups.each{ group ->
+					PointsSnapShotsByGroup(groupId:group.id) {
+						dateList = []
+						def overViews = []
+						pointsSnapShots.each{ snapShot ->
+							def pointsForGroup = snapShot.pointsForGroups.find{ it.group.id == group.id } 
+							if (pointsForGroup) { dateList << snapShot.date; overViews << pointsForGroup.overView }
+						}
+						if(dateList.size() > 0) pointsSnapShotsClosure(dateList,overViews)
 					}
-					if(dateList.size() > 0) pointsSnapShotsClosure(dateList,overViews)
 				}
-			}
+			} // SnapShots
 			
 			
 		 } // document
@@ -129,26 +138,27 @@ class UtilXml_v0_3 {
 	
 	static def importFromXmlDoc(def doc)
 	{
+		
 		def groups = []
-		def items = []
-		def iterations = []
-		def snapShots = []		
+		def items = []				
 		def itemsByIteration = [:]
 		def itemsByGroup = [:]
 		
-		def exportDate = odf.parse( doc.ExportDate.text().toString() )
-		def project = new Project(name:"Project import at ${exportDate}")
+		def exportDate = odf.parse( doc.ExportDate.text().toString() )		
+		def project = new Project(name:doc.Project.name.text() )
 		
+		/*-------------Groups-------------------------------*/
 		doc.Groups.Group.each{ 
 			def g = new ItemGroup()
 			g.project = project
 			g.id = Integer.parseInt(it.'@id'.text())
 			g.name = it.name.text()
-			groups << g
+			groups << g 
 		} 
 		
 		groups.each{ group -> itemsByGroup[group] = [] }
 		
+		/*--------------------Items-------------------------*/
 		doc.Items.Item.each{
 			def item = new Item()
 			item.uid = Integer.parseInt(it.'@id'.text())
@@ -160,6 +170,8 @@ class UtilXml_v0_3 {
 			item.comment = it.comment.text()
 			item.criteria = it.criteria.text()
 			item.subItems = []
+			item.dateCreated = odf.parse( it.dateCreated.text().toString() )
+			item.lastUpdated = odf.parse( it.lastUpdated.text().toString() )
 			
 			it.SubItems?.SubItem.each{
 				def subItem = new SubItem()
@@ -178,6 +190,8 @@ class UtilXml_v0_3 {
 			items << item
 		}
 		
+		/*-------------------Iterations--------------------------*/
+		def iterations = []
 		doc.Iterations.Iteration.each{ 
 			def nit = new Iteration()
 			nit.items = []
@@ -199,24 +213,22 @@ class UtilXml_v0_3 {
 			iterations << nit
 		}
 		
+		/*-----------------SnapShots---------------------------------*/
+		def snapShots = []
 		def pointsSnapShotsParser = { PointsSnapShotsXml ->
-			def dates = PointsSnapShotsXml.dates.text().split(seperator).collect{ odf.parse(it) }
+		    def datesText = PointsSnapShotsXml.dates.text()
+		    if (!datesText) return
+			def dates = datesText.split(seperator).collect{ odf.parse(it) }
 			def overViews = dates.collect{ new PointsOverView() }
 			
 			PointsSnapShotsXml.PointsByPriority.each{ 
 				def prio = Priority.valueOf(it.priority.text() )
-				def pointsTotal = it.points.total.text().split(seperator).collect{ Double.parseDouble(it) }
-				def pointsFinished = it.points.finished.text().split(seperator).collect{ Double.parseDouble(it) }
-				
-				if (pointsTotal.size() != dates.size()) throw new Exception("The number of dates and total number of Total elemements are not equal.")
-				if (pointsTotal.size() != pointsFinished.size()) throw new Exception("The number of elements for Total and Finished are not equal.")
-				pointsTotal.eachWithIndex{ pt, index ->
-					/* Some magic to work around not supporting all ItemStatus fields yet... */
-					def finished = pointsFinished[index]
-					def total = pointsTotal[index]
+				it.PointsByItemStatus.each{
+					def status = ItemStatus.valueOf( it.itemStatus.text() )
+					def pointsList = it.points.text().split(seperator).collect{ Double.parseDouble(it) }
+					if (pointsList.size() != dates.size()) throw new Exception("The number of dates and points elemements are not equal.")
 					
-					overViews[index].setPointsForView(prio, ItemStatus.Finished, finished )
-					overViews[index].setPointsForView(prio, ItemStatus.Request, total-finished )
+					pointsList.eachWithIndex{ points, index -> overViews[index].setPointsForView(prio, status, points) }
 				}
 			}
 			
@@ -227,34 +239,32 @@ class UtilXml_v0_3 {
 			}
 			
 			return dateOverViewList
+		}		
+		
+		def dateOverViewList = []
+		dateOverViewList = pointsSnapShotsParser(doc.SnapShots.PointsSnapShots)
+		
+		def datesAndOverViewsByGroup = [:] 
+		doc.SnapShots.PointsSnapShotsByGroup.each{ it -> 
+			if (!it) return 
+			def groupId = Integer.parseInt(it.'@groupId'.text())
+			def group = groups.find{ it.id == groupId }
+			if(group) datesAndOverViewsByGroup[group] = pointsSnapShotsParser(it.PointsSnapShots)
+			else throw new Exception("GroupId (${groupId}) could not be found.")
 		}
-		
-		if (doc.PointsSnapShots) {
-			def dateOverViewList = []
-			dateOverViewList = pointsSnapShotsParser(doc.PointsSnapShots)
-		
-			def datesAndOverViewsByGroup = [:] 
-			doc.PointsSnapShotsByGroup.each{ it -> 
-				if (!it) return 
-				def groupId = Integer.parseInt(it.'@groupId'.text())
-				def group = groups.find{ it.id == groupId }
-				if(group) datesAndOverViewsByGroup[group] = pointsSnapShotsParser(it.PointsSnapShots)
-				else throw new Exception("GroupId (${groupId}) could not be found.")
-			}
 				
-			dateOverViewList.each{ 
-				def snapShot = new PointsSnapShot(project, it.date)
-				snapShot.overView = it.overView
-				groups.each{ group ->
-					def dateAndOverView = datesAndOverViewsByGroup[group]?.find{ Util.getDaysInBetween(it.date, snapShot.date)==0 }
-					if (dateAndOverView) {
-						def pointsForGroup = new PointsForGroup(group,snapShot)
-						pointsForGroup.overView = dateAndOverView.overView
-						snapShot.pointsForGroups << pointsForGroup
-					}
+		dateOverViewList.each{ 
+			def snapShot = new PointsSnapShot(project,it.date)
+			snapShot.overView = it.overView
+			groups.each{ group ->
+				def dateAndOverView = datesAndOverViewsByGroup[group]?.find{ Util.getDaysInBetween(it.date, snapShot.date)==0 }
+				if (dateAndOverView) {
+					def pointsForGroup = new PointsForGroup(group,snapShot)
+					pointsForGroup.overView = dateAndOverView.overView
+					snapShot.pointsForGroups << pointsForGroup
 				}
-				snapShots << snapShot
 			}
+			snapShots << snapShot
 		}
 		
 		return ['groups':groups,'items':items, 'iterations':iterations, 'snapShots':snapShots, 'itemsByIteration':itemsByIteration,'itemsByGroup':itemsByGroup, 'exportDate':exportDate,'project':project]

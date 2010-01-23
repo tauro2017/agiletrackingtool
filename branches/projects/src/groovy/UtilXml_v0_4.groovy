@@ -138,7 +138,7 @@ class UtilXml_v0_4 {
 		def itemsByGroup = [:]
 		
 		def exportDate = odf.parse( doc.ExportDate.text().toString() )		
-		def project = new Project(name:"Project import at ${exportDate}",email:"unknown@unknown.org")
+		def project = new Project(name:"Project import at ${exportDate}")
 		
 		/*-------------Groups-------------------------------*/
 		doc.Groups.Group.each{ 
