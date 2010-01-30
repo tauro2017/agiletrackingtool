@@ -24,7 +24,7 @@ class UtilXml_v0_4 {
 	static def docVersion = "0.4"
 	static def seperator = ";"
 		
-	static def exportToXmlString(def groups, def items, def iterations, def pointsSnapShots = [], def exportDate )
+	static def exportToXmlString(def groups, def items, def iterations, def pointsSnapShots, def exportDate )
 	{
 		def builder = new groovy.xml.StreamingMarkupBuilder()
 		builder.encoding = "UTF-8"
@@ -131,16 +131,19 @@ class UtilXml_v0_4 {
 	
 	static def importFromXmlDoc(def doc)
 	{
+		
 		def groups = []
 		def items = []				
 		def itemsByIteration = [:]
 		def itemsByGroup = [:]
 		
-		def exportDate = odf.parse( doc.ExportDate.text().toString() )
+		def exportDate = odf.parse( doc.ExportDate.text().toString() )		
+		def project = new Project(name:"Project import at ${exportDate}")
 		
 		/*-------------Groups-------------------------------*/
 		doc.Groups.Group.each{ 
 			def g = new ItemGroup()
+			g.project = project
 			g.id = Integer.parseInt(it.'@id'.text())
 			g.name = it.name.text()
 			groups << g 
@@ -242,8 +245,7 @@ class UtilXml_v0_4 {
 		}
 				
 		dateOverViewList.each{ 
-			def snapShot = new PointsSnapShot()
-			snapShot.date =  it.date
+			def snapShot = new PointsSnapShot(project,it.date)
 			snapShot.overView = it.overView
 			groups.each{ group ->
 				def dateAndOverView = datesAndOverViewsByGroup[group]?.find{ Util.getDaysInBetween(it.date, snapShot.date)==0 }
@@ -256,11 +258,13 @@ class UtilXml_v0_4 {
 			snapShots << snapShot
 		}
 		
-		return ['groups':groups,'items':items, 'iterations':iterations, 'snapShots':snapShots, 'itemsByIteration':itemsByIteration,'itemsByGroup':itemsByGroup, 'exportDate':exportDate]
+		return ['groups':groups,'items':items, 'iterations':iterations, 'snapShots':snapShots, 'itemsByIteration':itemsByIteration,'itemsByGroup':itemsByGroup, 'exportDate':exportDate,'project':project]
 	}
 	
 	static void setRelationToDomainObjects(def map)
 	{
+		map.items.each{ item.project = map.project }
+	
 		map.itemsByIteration.each{ iter, items ->
 			items.each{ item -> iter.addItem(item) } 
 		}
