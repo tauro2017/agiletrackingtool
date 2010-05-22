@@ -31,6 +31,7 @@ class UtilXmlTests extends GroovyTestCase {
 	void setUp()
 	{
 		project = Defaults.getProjects(1)[0]
+		project.prioritizedItemIds = "someTextWillDoForTesting"
 		groups = Defaults.getGroups(5)
     	items = Defaults.getItems(5,groups,project)
     	subItems = Defaults.getSubItems(20,items)
@@ -62,11 +63,6 @@ class UtilXmlTests extends GroovyTestCase {
     		snapShot.pointsForGroups.each{ setOverViewToSupportStatus(it.overView) }
     	}
     	/*------------------------------*/
-	}
-	
-	void testExportImport_v0_3()
-	{
-		VersiontestExportImport(UtilXml_v0_3.docVersion)
 	}
 	
 	void testExportImport_v0_4()
@@ -101,60 +97,63 @@ class UtilXmlTests extends GroovyTestCase {
 		}
 		
 		assertTrue importProject != null
-		if(docVersion ==  UtilXml_v0_5.docVersion) assertTrue importProject.name == project.name
+		if(docVersion ==  UtilXml_v0_5.docVersion) { 
+			assertEquals importProject.name, project.name
+			assertEquals importProject.prioritizedItemIds, project.prioritizedItemIds
+	   }
 		
-		assertTrue groups.size() == importGroups.size()
-		assertTrue items.size() == importItems.size()
-		assertTrue iterations.size() == importIterations.size()
+		assertEquals groups.size() , importGroups.size()
+		assertEquals items.size() , importItems.size()
+		assertEquals iterations.size() , importIterations.size()
 		
 		groups.eachWithIndex{ group, index ->
-			assertTrue group.id == importGroups[index].id
-			assertTrue group.name == importGroups[index].name
-			assertTrue importProject == importGroups[index].project
+			assertEquals group.id , importGroups[index].id
+			assertEquals group.name , importGroups[index].name
+			assertEquals importProject , importGroups[index].project
 		}
 				
 		items.eachWithIndex{ item, index ->
-			assertTrue item.uid == importItems[index].uid
-			assertTrue item.description == importItems[index].description
-			assertTrue item.points == importItems[index].points
-			assertTrue item.status == importItems[index].status
-			assertTrue item.priority == importItems[index].priority
-			assertTrue item.comment == importItems[index].comment
-			assertTrue item.criteria == importItems[index].criteria
-			assertTrue importProject == importItems[index].project
+			assertEquals item.uid , importItems[index].uid
+			assertEquals item.description , importItems[index].description
+			assertEquals item.points , importItems[index].points
+			assertEquals item.status , importItems[index].status
+			assertEquals item.priority , importItems[index].priority
+			assertEquals item.comment , importItems[index].comment
+			assertEquals item.criteria , importItems[index].criteria
+			assertEquals importProject , importItems[index].project
 			
-			assertTrue item.group.id == importItems[index].group.id
+			assertEquals item.group.id , importItems[index].group.id
 			
-			assertTrue item.subItems.size() == importItems[index].subItems.size()
+			assertEquals item.subItems.size() , importItems[index].subItems.size()
 			item.subItems.each{ subItem ->
 				def importSubItem = importItems[index].getSubItem(subItem.id)
 
-				assertTrue subItem.item.uid == importSubItem.item.uid
-				assertTrue subItem.id      == importSubItem.id
-				assertTrue subItem.points  == importSubItem.points
-				assertTrue subItem.status  == importSubItem.status
+				assertEquals subItem.item.uid , importSubItem.item.uid
+				assertEquals subItem.id      , importSubItem.id
+				assertEquals subItem.points  , importSubItem.points
+				assertEquals subItem.status  , importSubItem.status
 			}
 		}
 		
 		iterations.eachWithIndex{ iter,index ->
-			assertTrue iter.id == importIterations[index].id
-			assertTrue iter.workingTitle == importIterations[index].workingTitle
-			assertTrue iter.status == importIterations[index].status
-			assertTrue importProject == importIterations[index].project
-			assertTrue Util.getDaysInBetween(iter.startTime, importIterations[index].startTime) == 0
-			assertTrue Util.getDaysInBetween(iter.endTime, importIterations[index].endTime) == 0
+			assertEquals iter.id , importIterations[index].id
+			assertEquals iter.workingTitle , importIterations[index].workingTitle
+			assertEquals iter.status , importIterations[index].status
+			assertEquals importProject , importIterations[index].project
+			assertEquals Util.getDaysInBetween(iter.startTime, importIterations[index].startTime) , 0
+			assertEquals Util.getDaysInBetween(iter.endTime, importIterations[index].endTime) , 0
 			
-			assertTrue iter.items.size() == importIterations[index].items.size()
+			assertEquals iter.items.size() , importIterations[index].items.size()
 			iter.items.each{ item ->
 				assertTrue importIterations[index].items.find{ it.uid == item.uid } != null
 			}
 		}
 		
-		assertTrue importSnapShots.size() == snapShots.size()
+		assertEquals importSnapShots.size() , snapShots.size()
 		snapShots.eachWithIndex{ snapShot, index ->
 		    def importSnapShot = importSnapShots[index]
-		    assertTrue importProject == importSnapShot.project
-			assertTrue Util.getDaysInBetween(snapShot.date, importSnapShot.date) == 0
+		    assertEquals importProject , importSnapShot.project
+			assertEquals Util.getDaysInBetween(snapShot.date, importSnapShot.date) , 0
 		    
 		    def overViewsAreEqual = { a, b -> 
 		        if ( docVersion != "0.3")
@@ -171,7 +170,7 @@ class UtilXmlTests extends GroovyTestCase {
 		    
 		    assertTrue overViewsAreEqual(snapShot.overView, importSnapShot.overView)
 		    
-		    assertTrue importSnapShot.pointsForGroups.size() == snapShot.pointsForGroups.size()
+		    assertEquals importSnapShot.pointsForGroups.size() , snapShot.pointsForGroups.size()
 		    snapShot.pointsForGroups.eachWithIndex{ pointsForGroup, groupIndex ->
 		    	def importPointsForGroup = importSnapShot.pointsForGroups.find{ it.group.id == pointsForGroup.group.id }
 		    	assertTrue importPointsForGroup != null
