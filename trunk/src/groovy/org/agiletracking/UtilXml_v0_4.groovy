@@ -19,13 +19,16 @@ You should have received a copy of the GNU General Public License
 along with Agile Tracking Tool.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------------*/
 package org.agiletracking
+import groovy.util.slurpersupport.GPathResult
 
 class UtilXml_v0_4 {
 	static java.text.DateFormat odf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	static def docVersion = "0.4"
-	static def seperator = ";"
+	static String docVersion = "0.4"
+	static String seperator = ";"
 		
-	static def exportToXmlString(def groups, def items, def iterations, def pointsSnapShots, def exportDate )
+	static def exportToXmlString(Collection<ItemGroup> groups, Collection<Item> items, 
+										  Collection<Iteration> iterations, Collection<PointsSnapShot> pointsSnapShots, 
+										  Date exportDate )
 	{
 		def builder = new groovy.xml.StreamingMarkupBuilder()
 		builder.encoding = "UTF-8"
@@ -131,7 +134,7 @@ class UtilXml_v0_4 {
 		return builder.bind(doc).toString()	
 	}
 	
-	static def importFromXmlDoc(def doc)
+	static Map importFromXmlDoc(GPathResult doc)
 	{
 		
 		def groups = []
@@ -261,18 +264,5 @@ class UtilXml_v0_4 {
 		}
 		
 		return ['groups':groups,'items':items, 'iterations':iterations, 'snapShots':snapShots, 'itemsByIteration':itemsByIteration,'itemsByGroup':itemsByGroup, 'exportDate':exportDate,'project':project]
-	}
-	
-	static void setRelationToDomainObjects(def map)
-	{
-		map.items.each{ item.project = map.project }
-	
-		map.itemsByIteration.each{ iter, items ->
-			items.each{ item -> iter.addItem(item) } 
-		}
-	
-		map.itemsByGroup.each{ group, items ->
-			items.each{ item -> group.addItem(item) }
-		}
 	}
 }
