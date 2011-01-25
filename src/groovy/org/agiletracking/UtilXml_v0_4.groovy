@@ -50,7 +50,7 @@ class UtilXml_v0_4 {
 			
 			Items {
 				items.each{ item ->
-				    def groupId = groups.find{ group -> group.items.find{ it.id == item.id } }?.id
+				   def groupId = groups.find{ group -> group.items.find{ it.id == item.id } }?.id
 					Item(id:item.uid, groupId:groupId) {
 						description(item.description)
 						points(item.points)
